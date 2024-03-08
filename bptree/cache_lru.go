@@ -12,7 +12,7 @@ type lruSpanCache struct {
 	lock sync.Mutex
 
 	l *list.List
-	m map[globalPageID]*list.Element
+	m map[GlobalPageID]*list.Element
 }
 
 type lruBusySpanCache struct {
@@ -22,7 +22,7 @@ type lruBusySpanCache struct {
 
 type lruFreeSpanCache struct {
 	*lruSpanCache
-	freeSpan func(globalPageID)
+	freeSpan func(GlobalPageID)
 }
 
 func newLRU(cap int) *lruSpanCache {
@@ -33,7 +33,7 @@ func newLRU(cap int) *lruSpanCache {
 		lock: sync.Mutex{},
 
 		l: list.New(),
-		m: make(map[globalPageID]*list.Element),
+		m: make(map[GlobalPageID]*list.Element),
 	}
 }
 
@@ -44,21 +44,18 @@ func newBusyLRU(cap int, writeBack func(*SpanInCache)) *lruBusySpanCache {
 	}
 }
 
-func newFreeLRU(cap int, freeSpan func(globalPageID)) *lruFreeSpanCache {
+func newFreeLRU(cap int, freeSpan func(GlobalPageID)) *lruFreeSpanCache {
 	return &lruFreeSpanCache{
 		lruSpanCache: newLRU(cap),
 		freeSpan:     freeSpan,
 	}
 }
 
-func (l *lruBusySpanCache) removeWriteBack(id globalPageID) {
+func (l *lruBusySpanCache) dirtyWriteBack(id GlobalPageID) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 
 	if e, ok := l.m[id]; ok {
-		l.l.Remove(e)
-		delete(l.m, id)
-		l.size--
 		l.writeBack(e.Value.(*SpanInCache))
 	}
 
@@ -79,7 +76,7 @@ func (l *lruSpanCache) getClosestSpanSize(pages int) *SpanInCache {
 	return nil
 }
 
-func (l *lruBusySpanCache) put(id globalPageID, span *SpanInCache) *SpanInCache {
+func (l *lruBusySpanCache) put(id GlobalPageID, span *SpanInCache) *SpanInCache {
 
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -109,7 +106,7 @@ func (l *lruBusySpanCache) put(id globalPageID, span *SpanInCache) *SpanInCache 
 
 }
 
-func (l *lruSpanCache) put(id globalPageID, span *SpanInCache) {
+func (l *lruSpanCache) put(id GlobalPageID, span *SpanInCache) {
 
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -131,7 +128,7 @@ func (l *lruSpanCache) put(id globalPageID, span *SpanInCache) {
 	}
 }
 
-func (l *lruSpanCache) getNoUpdate(id globalPageID) *SpanInCache {
+func (l *lruSpanCache) getNoUpdate(id GlobalPageID) *SpanInCache {
 
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -142,7 +139,7 @@ func (l *lruSpanCache) getNoUpdate(id globalPageID) *SpanInCache {
 	return nil
 }
 
-func (l *lruSpanCache) get(id globalPageID) *SpanInCache {
+func (l *lruSpanCache) get(id GlobalPageID) *SpanInCache {
 
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -155,7 +152,7 @@ func (l *lruSpanCache) get(id globalPageID) *SpanInCache {
 
 }
 
-func (l *lruSpanCache) remove(id globalPageID) {
+func (l *lruSpanCache) remove(id GlobalPageID) {
 
 	l.lock.Lock()
 	defer l.lock.Unlock()

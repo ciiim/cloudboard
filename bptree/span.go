@@ -3,7 +3,6 @@ package bptree
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 )
 
 var (
@@ -88,13 +87,10 @@ func (s spanMap) occupySuitableSpan(pages int) (localPageID, error) {
 	//记录上一个span的index
 	prev := localPageID(0)
 	now := s.getSpanInfo(0).nextFree()
-	if now == 0 {
-		return 0, ErrInternalError
-	}
 	for {
 		span := s.getSpanInfo(now)
-		fmt.Printf("now finding page id:%d,used:%v,head:%v\n",
-			now, span.flag().isUsed(), span.flag().isHead())
+		// fmt.Printf("now finding page id:%d,used:%v,head:%v\n",
+		// 	now, span.flag().isUsed(), span.flag().isHead())
 
 		// 如果找到的nearest free span已经被使用了，说明chunk已经满了
 		if span.flag().isUsed() {
@@ -106,7 +102,6 @@ func (s spanMap) occupySuitableSpan(pages int) (localPageID, error) {
 			if err := s.occupySpan(prev, now, i); err != nil {
 				return 0, err
 			}
-			fmt.Printf("occupy span's begin page id: %d\n", now)
 			return now, nil
 		}
 
@@ -132,7 +127,7 @@ func (s spanMap) freeSpan(pageID localPageID) (uint, error) {
 	var prev, next localPageID = 0, 0
 	//从头开始找到前驱和后继free span
 	for {
-		next := s.getSpanInfo(prev).nextFree()
+		next = s.getSpanInfo(prev).nextFree()
 		if next == 0 {
 			break
 		}
@@ -148,6 +143,8 @@ func (s spanMap) freeSpan(pageID localPageID) (uint, error) {
 	prevInfo := s.getSpanInfo(prev)
 	nextInfo := s.getSpanInfo(next)
 
+	// fmt.Printf("prepare to free pageID:%d,prev:%d,next:%d\n", pageID, prev, next)
+
 	freePages := span.spanPages()
 
 	//链接或合并后继span
@@ -157,11 +154,16 @@ func (s spanMap) freeSpan(pageID localPageID) (uint, error) {
 		s.overwriteSpanHead(next, toSpanInfo(0, 0, 0))
 		span = toSpanInfo(spanFreeFlag|spanHeadFlag, span.spanPages()+nextInfo.spanPages(), nextInfo.nextFree())
 		s.overwriteSpanHead(pageID, span)
+		// fmt.Printf("merge to next:%d\n", next)
+
 	} else {
 		// 否则链接
+		// fmt.Printf("link to next:%d\n", next)
 		span = toSpanInfo(spanFreeFlag|spanHeadFlag, span.spanPages(), next)
 		s.overwriteSpanHead(pageID, span)
 	}
+
+	s.tryUpdateNearestFreeSpan(pageID)
 
 	//链接或合并前驱span
 	//如果与前驱free span相连则合并
@@ -173,10 +175,12 @@ func (s spanMap) freeSpan(pageID localPageID) (uint, error) {
 		//重写前驱span info
 		prevInfo = toSpanInfo(prevInfo.flag(), prevInfo.spanPages()+span.spanPages(), span.nextFree())
 		s.overwriteSpanHead(prev, prevInfo)
+		// fmt.Printf("merge to prev:%d\n", prev)
 	} else {
 		// 否则链接
 		prevInfo = toSpanInfo(prevInfo.flag(), prevInfo.spanPages(), pageID)
 		s.overwriteSpanHead(prev, prevInfo)
+		// fmt.Printf("link to prev:%d\n", prev)
 	}
 
 	return freePages, nil
@@ -229,7 +233,7 @@ func (s spanMap) occupySpan(prevPageID, nowPageID localPageID, newInfo spanInfo)
 		// prev链上新的free span
 		if prevPageID != 0 {
 
-			fmt.Printf("link to prevPageID:%d\n", prevPageID)
+			// fmt.Printf("link to prevPageID:%d\n", prevPageID)
 
 			prevSpan := s.getSpanInfo(prevPageID)
 			prevSpan = toSpanInfo(prevSpan.flag(), prevSpan.spanPages(), newFreeSpanHeadIndex)
@@ -261,6 +265,7 @@ func (s spanMap) tryUpdateNearestFreeSpan(newNextFree localPageID) {
 	}
 	span = toSpanInfo(span.flag(), span.spanPages(), newNextFree)
 	s.overwriteSpanHead(0, span)
+	// fmt.Printf("update nearest free span to:%d\n", newNextFree)
 }
 
 // 覆写span的头部

@@ -21,7 +21,7 @@ const (
 
 type FreeLog struct {
 	//span
-	gPID globalPageID
+	gPID GlobalPageID
 }
 
 /*
@@ -173,7 +173,7 @@ func (f *RedoLog) Recover(b []byte) []FreeLog {
 	return logs
 }
 
-func (f *RedoLog) AddRedo(gPID globalPageID, pages int) error {
+func (f *RedoLog) AddRedo(gPID GlobalPageID, pages int) error {
 	log := FreeLog{
 		gPID: gPID,
 	}

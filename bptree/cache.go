@@ -6,7 +6,7 @@ import (
 )
 
 type SpanInCache struct {
-	globlID globalPageID
+	globlID GlobalPageID
 	//buf
 	buf []byte
 
@@ -17,7 +17,7 @@ func (s *SpanInCache) Pages() int {
 	return len(s.buf) / PageSize
 }
 
-func (s *SpanInCache) Id() globalPageID {
+func (s *SpanInCache) Id() GlobalPageID {
 	return s.globlID
 }
 
@@ -44,7 +44,7 @@ type Cache struct {
 func NewCache(busyCap, freeCap int, writeBackFn func(*SpanInCache)) *Cache {
 	c := &Cache{}
 
-	freeSpan := func(gPID globalPageID) {
+	freeSpan := func(gPID GlobalPageID) {
 		c.freeSpan(gPID)
 	}
 	c.busySpanLRU = newBusyLRU(busyCap, writeBackFn)
@@ -54,7 +54,7 @@ func NewCache(busyCap, freeCap int, writeBackFn func(*SpanInCache)) *Cache {
 }
 
 // 标记为脏页
-func (c *Cache) markDirty(id globalPageID) {
+func (c *Cache) markDirty(id GlobalPageID) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -64,7 +64,7 @@ func (c *Cache) markDirty(id globalPageID) {
 	}
 }
 
-func (c *Cache) freeSpan(id globalPageID) bool {
+func (c *Cache) freeSpan(id GlobalPageID) bool {
 
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -99,7 +99,7 @@ func (c *Cache) allocSpan(size int) (*SpanInCache, error) {
 	return span, nil
 }
 
-func (c *Cache) putBusySpan(id globalPageID, span *SpanInCache) {
+func (c *Cache) putBusySpan(id GlobalPageID, span *SpanInCache) {
 
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -107,7 +107,7 @@ func (c *Cache) putBusySpan(id globalPageID, span *SpanInCache) {
 	c.busySpanLRU.put(id, span)
 }
 
-func (c *Cache) putFreeSpan(id globalPageID, span *SpanInCache) {
+func (c *Cache) putFreeSpan(id GlobalPageID, span *SpanInCache) {
 
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -129,7 +129,7 @@ func (c *Cache) flush() {
 
 }
 
-func (c *Cache) getSpan(id globalPageID) *SpanInCache {
+func (c *Cache) getSpan(id GlobalPageID) *SpanInCache {
 
 	c.lock.Lock()
 	defer c.lock.Unlock()

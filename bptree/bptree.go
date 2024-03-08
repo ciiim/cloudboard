@@ -28,7 +28,7 @@ func (f nodeFlag) isRoot() bool {
 }
 
 type data struct {
-	gPID   globalPageID
+	gPID   GlobalPageID
 	length int64 // 数据长度
 }
 
@@ -41,7 +41,7 @@ type dataPage struct {
 type node struct {
 	flags     nodeFlag
 	recordNum uint64
-	nextPage  globalPageID
+	nextPage  GlobalPageID
 	record    [MaxRecordPerPage]record // 最多存储 254 条记录
 	_         uint64                   // 内存对齐
 }

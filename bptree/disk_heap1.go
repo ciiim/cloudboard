@@ -50,21 +50,21 @@ var (
 )
 
 // 全局pageID
-type globalPageID uint64
+type GlobalPageID uint64
 
-func (g globalPageID) chunkID() chunkID {
+func (g GlobalPageID) chunkID() chunkID {
 	return chunkID(g / MaxPagePerChunk)
 }
 
-func (g globalPageID) toLocal() localPageID {
+func (g GlobalPageID) toLocal() localPageID {
 	return localPageID(g % MaxPagePerChunk)
 }
 
 // 本地pageID
 type localPageID uint32
 
-func (l localPageID) toGlobal(chunkID chunkID) globalPageID {
-	return globalPageID(uint64(chunkID)*MaxPagePerChunk + uint64(l))
+func (l localPageID) toGlobal(chunkID chunkID) GlobalPageID {
+	return GlobalPageID(uint64(chunkID)*MaxPagePerChunk + uint64(l))
 }
 
 type chunkID = uint64

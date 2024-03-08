@@ -72,7 +72,7 @@ func (d *diskHeap) dump(chunkID chunkID, skip, num int) {
 WARNING: 任何Chunk Page操作前都要使用growChunkIfNeeded，防止越界访问触发abort
 */
 func (d *diskHeap) growChunkIfNeeded(chunkID chunkID, pageID localPageID, pages int) error {
-	fmt.Printf("grow chunk %d, page %d, pages %d\n", chunkID, pageID, pages)
+	// fmt.Printf("grow chunk %d, page %d, pages %d\n", chunkID, pageID, pages)
 	offset := d.chunkOffset(chunkID) + int64(pageID+localPageID(pages))*PageSize
 
 	return d.growTo(offset)
@@ -121,11 +121,13 @@ func (d *diskHeap) init() error {
 	return nil
 }
 
-func (d *diskHeap) Close() error {
+func (d *diskHeap) close() error {
 	runtime.SetFinalizer(d, nil)
 	for _, buf := range d.chunkSpaceMap {
 		buf.Close()
 	}
+	d.metadata.space.Close()
+	d.busyPage.buf.Close()
 	return d.file.Close()
 }
 
@@ -136,7 +138,7 @@ func (d *diskHeap) grow(length int64) error {
 	}
 	d.fileSize.Add(length)
 
-	println("grow", length)
+	// println("grow", length)
 	return nil
 }
 
@@ -209,7 +211,7 @@ func (d *diskHeap) initChunk(id chunkID) error {
 
 }
 
-func (d *diskHeap) allocSpanInChunk(chunk chunkID, pages int) (globalPageID, error) {
+func (d *diskHeap) allocSpanInChunk(chunk chunkID, pages int) (GlobalPageID, error) {
 	//读取该chunk的span map
 	sm, err := d.getSpanMap(chunk)
 	if err != nil {
@@ -238,7 +240,7 @@ func (d *diskHeap) chunkOffset(id chunkID) int64 {
 	return ChunkSpaceOffset + int64(id)*MaxChunkSize
 }
 
-func (d *diskHeap) allocSpan(size int) (gPID globalPageID, err error) {
+func (d *diskHeap) allocSpan(size int) (gPID GlobalPageID, err error) {
 	if size == 0 {
 		return 0, ErrInvaildParam
 	}
@@ -251,7 +253,7 @@ func (d *diskHeap) allocSpan(size int) (gPID globalPageID, err error) {
 		return int(size / PageSize)
 	}()
 
-	fmt.Printf("try allocate %d page(s)\n", pageNum)
+	// fmt.Printf("try allocate %d page(s)\n", pageNum)
 
 	if pageNum > MaxSpanPageNum {
 		return 0, ErrMaxPagePerSpan
@@ -263,7 +265,6 @@ func (d *diskHeap) allocSpan(size int) (gPID globalPageID, err error) {
 	var looped bool = false
 	for {
 		used = int(d.busyPage.getChunk(d.currentChunk))
-		fmt.Printf("now chunk used %d\n", used)
 		if used == -1 {
 			// busy chunk metadata is full
 			return 0, ErrMaxChunkNum
@@ -274,7 +275,6 @@ func (d *diskHeap) allocSpan(size int) (gPID globalPageID, err error) {
 				// chunk初始化
 				_ = d.initChunk(d.metadata.GetNextChunk())
 				used = int(d.busyPage.getChunk(d.currentChunk))
-				fmt.Printf("after init used %d\n", used)
 			} else {
 				looped = true
 				d.currentChunk = 0
@@ -305,7 +305,7 @@ func (d *diskHeap) getSpanMap(chunkID chunkID) (*spanMap, error) {
 }
 
 // buf 不是mmap得到的，写会先找到chunk mmap buf里对应的buf，然后写回
-func (d *diskHeap) writeBack(gPID globalPageID, buf []byte, pages int) error {
+func (d *diskHeap) writeBack(gPID GlobalPageID, buf []byte, pages int) error {
 	chunkBuf, err := d.getChunk(gPID.chunkID())
 	if err != nil {
 		return err
@@ -315,14 +315,16 @@ func (d *diskHeap) writeBack(gPID globalPageID, buf []byte, pages int) error {
 
 	copy(targetBuf, buf)
 
-	fmt.Printf("do write back GPID: %d", gPID)
+	// fmt.Printf("do write back GPID: %d", gPID)
 
-	return unix.Msync(targetBuf, unix.MS_SYNC)
+	return unix.Msync(targetBuf, unix.MS_ASYNC)
 }
 
-func (d *diskHeap) freeSpan(gPID globalPageID) error {
+func (d *diskHeap) freeSpan(gPID GlobalPageID) error {
 	chunkID := gPID.chunkID()
 	localID := gPID.toLocal()
+
+	// println("disk free span", gPID)
 
 	var sm *spanMap
 
@@ -358,7 +360,7 @@ func (d *diskHeap) getChunk(chunkID chunkID) (space, error) {
 	return buf, nil
 }
 
-func (d *diskHeap) getSpan(gPID globalPageID) (*SpanInCache, error) {
+func (d *diskHeap) getSpan(gPID GlobalPageID) (*SpanInCache, error) {
 	chunkID := gPID.chunkID()
 
 	// 访问不存在的span
