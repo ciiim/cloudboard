@@ -36,5 +36,3 @@ service HashChunkSystemService {
     rpc CheckReplica(CheckReplicaRequest) returns (Error) {}
     rpc UpdateReplicaInfo(ReplicaChunkInfo) returns (Error) {}
 }
-
-

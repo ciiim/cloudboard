@@ -63,9 +63,6 @@ type ConsistentHash struct {
 
 	//node info map 包含虚拟节点
 	hashMap map[uint64]CHashItem
-
-	//用于PickN的map
-	findNMap map[string]CHashItem
 }
 
 var (
@@ -214,15 +211,7 @@ func (c *ConsistentHash) GetN(key []byte, n int) []CHashItem {
 		return nil
 	}
 
-	// 懒加载
-	if c.findNMap == nil {
-		c.findNMap = make(map[string]CHashItem)
-	}
-
-	// Find结束后清理findNMap
-	defer func() {
-		clear(c.findNMap)
-	}()
+	findNMap := make(map[string]CHashItem)
 
 	hash := c.hashFn(key)
 
@@ -231,7 +220,7 @@ func (c *ConsistentHash) GetN(key []byte, n int) []CHashItem {
 	items := make([]CHashItem, 0, n)
 
 	items = append(items, c.hashMap[c.hashRing[index%len(c.hashRing)]].(*innerItem).real)
-	c.findNMap[items[0].ID()] = items[0]
+	findNMap[items[0].ID()] = items[0]
 
 	// 剩余需要遍历的节点数
 	remaining := len(c.hashRing) - 1
@@ -245,13 +234,13 @@ func (c *ConsistentHash) GetN(key []byte, n int) []CHashItem {
 		item := c.hashMap[c.hashRing[index%len(c.hashRing)]].(*innerItem).real
 
 		// 如果节点已经存在，则跳过
-		if compare(item, c.findNMap) {
+		if compare(item, findNMap) {
 			continue
 		}
 
 		// 添加节点
 		items = append(items, item)
-		c.findNMap[item.ID()] = item
+		findNMap[item.ID()] = item
 		count++
 	}
 	return items

@@ -207,6 +207,7 @@ func (r *ReplicaServiceG[T]) RecoverReplica(key []byte) (reader io.ReadSeekClose
 	}
 
 	defer func() {
+		// TODO:测试
 		// if err == nil {
 		// 	// 移除冗余副本
 		// 	// 先进行副本健康检查，确定总副本数量，然后删除多余的副本

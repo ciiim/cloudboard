@@ -108,10 +108,7 @@ func (r *RingAPI) putFile(space, base, name string, fileHash []byte, fileSize in
 // 分片存储文件
 func (r *RingAPI) putFileSplit(space, base, name string, chunkSize int64, fileHash []byte, fileSize int64, file multipart.File) error {
 	// 计算分片数量
-	println("filesize", fileSize, "chunksize", chunkSize)
-
 	chunkNum := int(math.Ceil(float64(fileSize) / float64(chunkSize)))
-	println("chunkNum:", chunkNum)
 	//创建分片Reader
 	chunkReaders := make([]*io.SectionReader, chunkNum)
 	chunks := make([]*tree.FileChunk, chunkNum)
@@ -168,9 +165,7 @@ func (r *RingAPI) putFileSplit(space, base, name string, chunkSize int64, fileHa
 			return err
 		}
 	}
-
 	return nil
-
 }
 
 type fileReader struct {

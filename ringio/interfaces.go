@@ -8,6 +8,12 @@ import (
 	"github.com/ciiim/cloudborad/storage/types"
 )
 
+type IFile interface {
+	Writable() bool
+	Metadata() *tree.Metadata
+	io.ReadWriteCloser
+}
+
 type IDHashChunk interface {
 	hashchunk.IHashChunk
 }

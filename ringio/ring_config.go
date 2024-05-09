@@ -32,6 +32,9 @@ type RingConfig struct {
 
 	// TODO: 是否开启小文件优化特性
 	EnableSmallFileOptimize bool
+
+	// TODO: 是否开启自定义模块
+	EnableCustomModule bool
 }
 
 func DefaultRingConfig() *RingConfig {

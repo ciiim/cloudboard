@@ -46,7 +46,8 @@ func BenchmarkAllocCachePages1(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		id, err := a.Alloc(bptree.PageSize * 16)
+		_, _ = a.Alloc(bptree.PageSize * 1)
+		id, err := a.Alloc(bptree.PageSize * 1)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -55,7 +56,7 @@ func BenchmarkAllocCachePages1(b *testing.B) {
 			b.Fatal(err)
 		}
 		// spans = append(spans, id)
-		copy(span.FixedBytes(), []byte("data"))
+		copy(span.FixedBytes(), []byte("datadata"))
 
 		a.ForceSync(id)
 		// a.MarkDirty(id)
@@ -63,7 +64,6 @@ func BenchmarkAllocCachePages1(b *testing.B) {
 		a.Free(id)
 	}
 	b.StopTimer()
-
 }
 
 func BenchmarkAllocPages1(b *testing.B) {
@@ -237,6 +237,26 @@ func TestAllocNoCacheAndFree(t *testing.T) {
 	allocNPagesWithCache(t, a, 16, 8, true)
 	allocNPagesWithCache(t, a, 32, 8, true)
 
+}
+
+func TestNewChunk(t *testing.T) {
+	a := bptree.NewAllocator()
+	defer os.Remove("db.dat")
+	defer a.Close()
+
+	//分配chunk最大page数的span
+	id, err := a.Alloc(bptree.MaxUserPagePerChunk * bptree.PageSize)
+	assert.Equal(t, err, nil)
+
+	pages, _ := a.GetSpanPages(id)
+	t.Log(id, pages)
+
+	// 第二个chunk
+	id2, err := a.Alloc(1024)
+	assert.Equal(t, err, nil)
+
+	pages, _ = a.GetSpanPages(id2)
+	t.Log(id2, pages)
 }
 
 // func TestDump(t *testing.T) {

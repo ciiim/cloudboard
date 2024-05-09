@@ -30,7 +30,7 @@ type diskHeap struct {
 	findChunk    sync.Mutex
 	currentChunk chunkID
 
-	chunkSpaceMap map[chunkID]space
+	spanInfoSpaceMap map[chunkID]spanMap
 
 	metadata *headerMetadata
 	busyPage *headerBusyPage
@@ -38,9 +38,9 @@ type diskHeap struct {
 
 func newDiskHeap() *diskHeap {
 	d := &diskHeap{
-		metadata:      new(headerMetadata),
-		busyPage:      new(headerBusyPage),
-		chunkSpaceMap: make(map[chunkID]space),
+		metadata:         new(headerMetadata),
+		busyPage:         new(headerBusyPage),
+		spanInfoSpaceMap: make(map[chunkID]spanMap),
 	}
 	if err := d.init(); err != nil {
 		return nil
@@ -113,7 +113,7 @@ func (d *diskHeap) init() error {
 	}
 
 	runtime.SetFinalizer(d, func(d *diskHeap) {
-		for _, buf := range d.chunkSpaceMap {
+		for _, buf := range d.spanInfoSpaceMap {
 			buf.Close()
 		}
 		d.file.Close()
@@ -123,11 +123,11 @@ func (d *diskHeap) init() error {
 
 func (d *diskHeap) close() error {
 	runtime.SetFinalizer(d, nil)
-	for _, buf := range d.chunkSpaceMap {
+	for _, buf := range d.spanInfoSpaceMap {
 		buf.Close()
 	}
-	d.metadata.space.Close()
-	d.busyPage.buf.Close()
+	d.metadata.space.Release()
+	d.busyPage.buf.Release()
 	return d.file.Close()
 }
 
@@ -292,32 +292,26 @@ func (d *diskHeap) allocSpan(size int) (gPID GlobalPageID, err error) {
 }
 
 // 获取chunk 的 span info map
-func (d *diskHeap) getSpanMap(chunkID chunkID) (*spanMap, error) {
-	chunkSpace, err := d.getChunk(chunkID)
-	if err != nil {
-		return nil, err
-	}
-	spanMap := &spanMap{
-		buf: space{buf: chunkSpace.buf[:SpanMapLengthPerChunk], step: SpanInfoSize},
+func (d *diskHeap) getSpanMap(chunkID chunkID) (spanMap, error) {
+	if sm, ok := d.spanInfoSpaceMap[chunkID]; ok {
+		return sm, nil
 	}
 
-	return spanMap, nil
+	space, err := d.mapSpace(d.chunkOffset(chunkID), SpanMapLengthPerChunk, syscall.MADV_NORMAL)
+	if err != nil {
+		return spanMap{}, err
+	}
+
+	sm := spanMap{space}
+
+	d.spanInfoSpaceMap[chunkID] = sm
+
+	return sm, nil
 }
 
-// buf 不是mmap得到的，写会先找到chunk mmap buf里对应的buf，然后写回
-func (d *diskHeap) writeBack(gPID GlobalPageID, buf []byte, pages int) error {
-	chunkBuf, err := d.getChunk(gPID.chunkID())
-	if err != nil {
-		return err
-	}
-
-	targetBuf := chunkBuf.buf[gPID.toLocal()*PageSize : (gPID.toLocal()+localPageID(pages))*PageSize]
-
-	copy(targetBuf, buf)
-
-	// fmt.Printf("do write back GPID: %d", gPID)
-
-	return unix.Msync(targetBuf, unix.MS_ASYNC)
+// 使用msync强制写回
+func (d *diskHeap) writeBack(space space) error {
+	return unix.Msync(space.buf, unix.MS_ASYNC)
 }
 
 func (d *diskHeap) freeSpan(gPID GlobalPageID) error {
@@ -326,7 +320,7 @@ func (d *diskHeap) freeSpan(gPID GlobalPageID) error {
 
 	// println("disk free span", gPID)
 
-	var sm *spanMap
+	var sm spanMap
 
 	//读取该chunk的span map
 	sm, err := d.getSpanMap(chunkID)
@@ -344,21 +338,22 @@ func (d *diskHeap) freeSpan(gPID GlobalPageID) error {
 
 }
 
-func (d *diskHeap) getChunk(chunkID chunkID) (space, error) {
-	if buf, ok := d.chunkSpaceMap[chunkID]; ok {
-		return buf, nil
-	}
+// func (d *diskHeap) getSpanInfo(chunkID chunkID) (spanMap, error) {
+// 	if spanMap, ok := d.spanInfoSpaceMap[chunkID]; ok {
+// 		return spanMap, nil
+// 	}
 
-	//mmap len(buf) 是可能大于文件长度的
-	buf, err := d.mapSpace(d.chunkOffset(chunkID), MaxChunkSize, syscall.MADV_NORMAL)
-	if err != nil {
-		return space{}, err
-	}
+// 	space, err := d.mapSpace(d.chunkOffset(chunkID), SpanMapLengthPerChunk, syscall.MADV_NORMAL)
+// 	if err != nil {
+// 		return spanMap{}, err
+// 	}
 
-	d.chunkSpaceMap[chunkID] = buf
+// 	spanInfoMap := spanMap{space}
 
-	return buf, nil
-}
+// 	d.spanInfoSpaceMap[chunkID] = spanInfoMap
+
+// 	return spanInfoMap, nil
+// }
 
 func (d *diskHeap) getSpan(gPID GlobalPageID) (*SpanInCache, error) {
 	chunkID := gPID.chunkID()
@@ -380,22 +375,16 @@ func (d *diskHeap) getSpan(gPID GlobalPageID) (*SpanInCache, error) {
 		return nil, ErrInvaildAccess
 	}
 
-	// 从chunk mmap 中截取需要的数据
-	chunkBuf, err := d.getChunk(gPID.chunkID())
+	// mmap 需要的span
+	spanSpace, err := d.mapSpace(d.chunkOffset(chunkID)+int64(gPID.toLocal())*PageSize, int64(info.spanPages())*PageSize, syscall.MADV_NORMAL)
 	if err != nil {
 		return nil, err
 	}
 
-	bufCopy := make([]byte, PageSize*info.spanPages())
-
-	spanBuf := chunkBuf.buf[gPID.toLocal()*PageSize : (gPID.toLocal()+localPageID(info.spanPages()))*PageSize]
-
-	copy(bufCopy, spanBuf)
-
 	span := &SpanInCache{
-		globlID: gPID,
+		globalID: gPID,
 
-		buf: bufCopy,
+		space: spanSpace,
 
 		dirty: false,
 	}

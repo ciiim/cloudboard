@@ -27,6 +27,8 @@ const (
 	// 一个Chunk中系统使用的Page数，包含PageBitmap和SpanMap占用的page
 	SysUsedPagePerChunk = SpanMapLengthPerChunk / PageSize // 1024 * 4KB
 
+	UserPageNo = SysUsedPagePerChunk
+
 	// 一个Chunk中用户可用的Page数
 	MaxUserPagePerChunk = MaxPagePerChunk - SysUsedPagePerChunk
 )
@@ -84,9 +86,6 @@ func (h *headerMetadata) SetNextChunk(chunkID chunkID) {
 type headerBusyPage struct {
 	// chunks [MaxChunkNum]int32
 
-	// 常驻内存的busy page数的大根堆
-	// busyHeap busyPageHeap
-
 	lock sync.RWMutex
 
 	// mmap后得到该header的buf
@@ -140,7 +139,7 @@ type space struct {
 	step uint
 }
 
-func (s *space) Close() error {
+func (s *space) Release() error {
 	if s.buf == nil {
 		return nil
 	}

@@ -1,22 +1,22 @@
-package localtx
+//go:generate msgp
+package atomic
 
 // 一个undo操作
 // 记录在undo日志中
-type undo struct {
-	// 事务ID
-	txID int64
+type UndoLog struct {
+	// 原子操作ID
+	AID uint64
 
 	// 操作
-	op op
+	Op Op
 }
 
 // 一个操作
-// func (tx *Tx) Op(opID int64, args ...any)
-type op struct {
+type Op struct {
 
 	// 操作id
 	// 用于恢复时查找对应的操作函数
-	OpID string
+	OpID string //OpID
 	// 操作参数
-	Args []any
+	Args []string
 }

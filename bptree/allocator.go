@@ -1,6 +1,8 @@
 package bptree
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Allocator struct {
 	d *diskHeap
@@ -9,13 +11,17 @@ type Allocator struct {
 
 func NewAllocator() *Allocator {
 	d := newDiskHeap()
-	writeBack := func(span *SpanInCache) {
+	writeBackFn := func(span *SpanInCache) {
 		// 写回到磁盘
-		if err := d.writeBack(span.globlID, span.buf, span.Pages()); err != nil {
+		if err := d.writeBack(span.space); err != nil {
 			println("Write back error", err.Error())
 		}
 	}
-	c := NewCache(64, 32, writeBack)
+	releaseSpanFn := func(span *SpanInCache) {
+		_ = d.freeSpan(span.globalID)
+		_ = span.space.Release()
+	}
+	c := NewCache(16, 16, writeBackFn, releaseSpanFn)
 	return &Allocator{d, c}
 }
 
@@ -45,6 +51,15 @@ func (a *Allocator) Dump(chunkID chunkID, skip, num int) {
 	a.d.dump(chunkID, skip+1024, num)
 }
 
+func (a *Allocator) GetSpanPages(id GlobalPageID) (pages uint, err error) {
+	sm, err := a.d.getSpanMap(id.chunkID())
+	if err != nil {
+		return 0, err
+	}
+	info := sm.getSpanInfo(id.toLocal())
+	return info.spanPages(), nil
+}
+
 func (a *Allocator) AllocNoCache(size int) (*SpanInCache, error) {
 	// 从磁盘分配
 	id, err := a.d.allocSpan(size)
@@ -59,7 +74,7 @@ func (a *Allocator) Alloc(size int) (GlobalPageID, error) {
 	// 从空闲span缓存中分配
 	span, err := a.c.allocSpan(size)
 	if span != nil && err == nil {
-		return span.globlID, nil
+		return span.globalID, nil
 	}
 
 	// 从磁盘分配

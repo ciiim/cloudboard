@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 
 	"github.com/ciiim/cloudborad/storage/types"
 )
@@ -21,10 +23,14 @@ var (
 type Space struct {
 	root string
 	// /treeFS.rootPath/spaceKey
-	spaceKey string
+	spaceKey string //also space name
 	base     string
 	capacity types.Byte
 	occupy   types.Byte
+
+	permission fs.FileMode
+
+	spaceMutex sync.RWMutex
 }
 
 func (s *Space) storeMetaData(base, fileName string, metadata []byte) (err error) {
@@ -59,12 +65,10 @@ func (s *Space) deleteMetaData(base, fileName string) error {
 }
 
 func (s *Space) makeDir(base, fileName string) error {
-
 	return os.Mkdir(s.getFullPath(base, fileName), 0755)
 }
 
 func (s *Space) renameDir(base, fileName, newName string) error {
-
 	return os.Rename(s.getFullPath(base, fileName), s.getFullPath(base, newName))
 }
 
@@ -137,13 +141,11 @@ func (s *Space) save() error {
 }
 
 func (s *Space) Close() error {
-
 	return s.save()
 }
 
 func (s *Space) Occupy() types.Byte {
-
-	return s.occupy
+	return atomic.LoadInt64(&s.occupy)
 }
 
 // Get "this" size, "this" can be a file or a dir
@@ -165,12 +167,12 @@ func (s *Space) GetSize(base, target string) (types.Byte, error) {
 	return size, err
 }
 
-func (s *Space) Cap() int64 {
-
-	return s.capacity
+func (s *Space) Cap() types.Byte {
+	return atomic.LoadInt64(&s.capacity)
 }
 
 func (s *Space) getFullPath(base, target string) string {
+
 	if strings.Contains(base, BASE_DIR) {
 		return filepath.Join(s.root, s.spaceKey, base, target)
 	}

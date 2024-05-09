@@ -18,7 +18,7 @@ type ExtraInfo struct {
 
 type HashChunkInfo struct {
 
-	// 块的引用计数
+	// 分片的引用计数
 	ChunkCount int64 `json:"count"`
 
 	ChunkName       string    `json:"chunk_name"`

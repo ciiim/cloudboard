@@ -75,7 +75,7 @@ type spanMap struct {
 }
 
 func (s spanMap) Close() error {
-	return s.buf.Close()
+	return s.buf.Release()
 }
 
 func (s spanMap) init() {

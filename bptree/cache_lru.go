@@ -22,7 +22,7 @@ type lruBusySpanCache struct {
 
 type lruFreeSpanCache struct {
 	*lruSpanCache
-	freeSpan func(GlobalPageID)
+	releaseSpan func(*SpanInCache)
 }
 
 func newLRU(cap int) *lruSpanCache {
@@ -44,10 +44,10 @@ func newBusyLRU(cap int, writeBack func(*SpanInCache)) *lruBusySpanCache {
 	}
 }
 
-func newFreeLRU(cap int, freeSpan func(GlobalPageID)) *lruFreeSpanCache {
+func newFreeLRU(cap int, releaseSpan func(*SpanInCache)) *lruFreeSpanCache {
 	return &lruFreeSpanCache{
 		lruSpanCache: newLRU(cap),
-		freeSpan:     freeSpan,
+		releaseSpan:  releaseSpan,
 	}
 }
 
@@ -61,7 +61,7 @@ func (l *lruBusySpanCache) dirtyWriteBack(id GlobalPageID) {
 
 }
 
-func (l *lruSpanCache) getClosestSpanSize(pages int) *SpanInCache {
+func (l *lruFreeSpanCache) getClosestSpanSize(pages int) *SpanInCache {
 
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -76,7 +76,36 @@ func (l *lruSpanCache) getClosestSpanSize(pages int) *SpanInCache {
 	return nil
 }
 
-func (l *lruBusySpanCache) put(id GlobalPageID, span *SpanInCache) *SpanInCache {
+func (l *lruBusySpanCache) put(id GlobalPageID, span *SpanInCache) {
+
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	if e, ok := l.m[id]; ok {
+		l.l.MoveToFront(e)
+		return
+	}
+
+	e := l.l.PushFront(span)
+	l.m[id] = e
+	l.size++
+
+	var ret *SpanInCache = nil
+
+	if l.size > l.cap {
+		e := l.l.Back()
+		l.l.Remove(e)
+		delete(l.m, e.Value.(*SpanInCache).globalID)
+		ret = e.Value.(*SpanInCache)
+		l.size--
+		if ret.dirty {
+			l.writeBack(ret)
+		}
+		_ = ret.space.Release()
+	}
+}
+
+func (l *lruFreeSpanCache) put(id GlobalPageID, span *SpanInCache) *SpanInCache {
 
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -95,37 +124,13 @@ func (l *lruBusySpanCache) put(id GlobalPageID, span *SpanInCache) *SpanInCache 
 	if l.size > l.cap {
 		e := l.l.Back()
 		l.l.Remove(e)
-		delete(l.m, e.Value.(*SpanInCache).globlID)
+		delete(l.m, e.Value.(*SpanInCache).globalID)
 		ret = e.Value.(*SpanInCache)
 		l.size--
-		if ret.dirty {
-			l.writeBack(ret)
-		}
+		l.releaseSpan(ret)
 	}
 	return ret
 
-}
-
-func (l *lruSpanCache) put(id GlobalPageID, span *SpanInCache) {
-
-	l.lock.Lock()
-	defer l.lock.Unlock()
-
-	if e, ok := l.m[id]; ok {
-		l.l.MoveToFront(e)
-		return
-	}
-
-	e := l.l.PushFront(span)
-	l.m[id] = e
-	l.size++
-
-	if l.size > l.cap {
-		e := l.l.Back()
-		l.l.Remove(e)
-		delete(l.m, e.Value.(*SpanInCache).globlID)
-		l.size--
-	}
 }
 
 func (l *lruSpanCache) getNoUpdate(id GlobalPageID) *SpanInCache {

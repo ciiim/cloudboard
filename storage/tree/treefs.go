@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ciiim/cloudborad/storage/types"
 )
@@ -20,6 +21,9 @@ const (
 type DirEntry = fs.DirEntry
 
 type TreeFileSystem struct {
+	mu         sync.RWMutex
+	usingSpace map[string]*Space
+
 	config *Config
 }
 
@@ -68,9 +72,21 @@ func (t *TreeFileSystem) NewLocalSpace(space string, cap types.Byte) error {
 }
 
 func (t *TreeFileSystem) GetLocalSpace(space string) *Space {
+	s := func() *Space {
+		t.mu.RLock()
+		defer t.mu.RUnlock()
+		if s, ok := t.usingSpace[space]; ok {
+			return s
+		}
+		return nil
+	}()
+	if s != nil {
+		return s
+	}
+
 	file, err := os.Open(filepath.Join(t.config.RootPath, space, STAT_FILE))
 	if err != nil {
-		log.Println("[Space] Lack of stat file", err)
+		log.Println("[Space] Missing stat file", space)
 		return nil
 	}
 	defer file.Close()
@@ -85,13 +101,18 @@ func (t *TreeFileSystem) GetLocalSpace(space string) *Space {
 	}
 	cap, _ := strconv.ParseInt(capANDoccupy[0], 10, 64)
 	occupy, _ := strconv.ParseInt(capANDoccupy[1], 10, 64)
-	s := &Space{
+	s = &Space{
 		root:     t.config.RootPath,
 		spaceKey: space,
 		base:     BASE_DIR,
 		capacity: cap,
 		occupy:   occupy,
 	}
+
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.usingSpace[space] = s
+
 	return s
 }
 

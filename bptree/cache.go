@@ -6,23 +6,23 @@ import (
 )
 
 type SpanInCache struct {
-	globlID GlobalPageID
+	globalID GlobalPageID
 	//buf
-	buf []byte
+	space space
 
 	dirty bool
 }
 
 func (s *SpanInCache) Pages() int {
-	return len(s.buf) / PageSize
+	return len(s.space.buf) / PageSize
 }
 
 func (s *SpanInCache) Id() GlobalPageID {
-	return s.globlID
+	return s.globalID
 }
 
 func (s *SpanInCache) FixedBytes() []byte {
-	return s.buf
+	return s.space.buf
 }
 
 // type SuperCache struct {
@@ -38,18 +38,15 @@ type Cache struct {
 	// 空闲span缓存，可以被分配
 	freeSpanLRU *lruFreeSpanCache
 
-	freeRedo *RedoLog
+	// freeRedo *RedoLog
 }
 
-func NewCache(busyCap, freeCap int, writeBackFn func(*SpanInCache)) *Cache {
+func NewCache(busyCap, freeCap int, writeBackFn func(*SpanInCache), releaseSpanFn func(*SpanInCache)) *Cache {
 	c := &Cache{}
 
-	freeSpan := func(gPID GlobalPageID) {
-		c.freeSpan(gPID)
-	}
 	c.busySpanLRU = newBusyLRU(busyCap, writeBackFn)
 
-	c.freeSpanLRU = newFreeLRU(freeCap, freeSpan)
+	c.freeSpanLRU = newFreeLRU(freeCap, releaseSpanFn)
 	return c
 }
 
@@ -94,8 +91,8 @@ func (c *Cache) allocSpan(size int) (*SpanInCache, error) {
 	if span == nil {
 		return nil, errors.New("free span cache missing")
 	}
-	c.freeSpanLRU.remove(span.globlID)
-	c.busySpanLRU.put(span.globlID, span)
+	c.freeSpanLRU.remove(span.globalID)
+	c.busySpanLRU.put(span.globalID, span)
 	return span, nil
 }
 
