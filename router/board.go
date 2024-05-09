@@ -6,8 +6,9 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/ciiim/cloudborad/models"
-	"github.com/ciiim/cloudborad/service"
+	"cloudborad/models"
+	"cloudborad/service"
+
 	"github.com/gin-gonic/gin"
 )
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs/peers"
 )
 
 type HashDFile struct {

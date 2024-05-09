@@ -1,7 +1,7 @@
 package fs
 
 import (
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs/peers"
 )
 
 const (

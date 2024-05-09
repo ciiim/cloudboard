@@ -9,8 +9,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/ciiim/cloudborad/errmsg"
-	"github.com/ciiim/cloudborad/models"
+	"cloudborad/errmsg"
+	"cloudborad/models"
+
 	"github.com/dlclark/regexp2"
 )
 

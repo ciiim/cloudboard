@@ -3,7 +3,7 @@ package service
 import (
 	"time"
 
-	"github.com/ciiim/cloudborad/server"
+	"cloudborad/server"
 )
 
 type EmailConfig struct {

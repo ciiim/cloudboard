@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs/peers"
 
-	"github.com/ciiim/cloudborad/internal/fs/fspb"
+	"cloudborad/internal/fs/fspb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

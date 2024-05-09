@@ -3,7 +3,7 @@ package models
 import (
 	"fmt"
 
-	"github.com/ciiim/cloudborad/internal/database"
+	"cloudborad/internal/database"
 )
 
 type Board struct {

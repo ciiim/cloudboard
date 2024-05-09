@@ -3,7 +3,7 @@ package fs
 import (
 	"time"
 
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs/peers"
 )
 
 type Byte = int64

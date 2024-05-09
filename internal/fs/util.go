@@ -1,7 +1,8 @@
 package fs
 
 import (
-	"github.com/ciiim/cloudborad/internal/fs/fspb"
+	"cloudborad/internal/fs/fspb"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

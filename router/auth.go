@@ -3,7 +3,8 @@ package router
 import (
 	"net/http"
 
-	"github.com/ciiim/cloudborad/errmsg"
+	"cloudborad/errmsg"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )

@@ -4,11 +4,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/ciiim/cloudborad/conf"
-	"github.com/ciiim/cloudborad/internal/database"
-	"github.com/ciiim/cloudborad/router"
-	"github.com/ciiim/cloudborad/server"
-	"github.com/ciiim/cloudborad/service"
+	"cloudborad/conf"
+	"cloudborad/internal/database"
+	"cloudborad/router"
+	"cloudborad/server"
+	"cloudborad/service"
 )
 
 func main() {

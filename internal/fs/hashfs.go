@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ciiim/cloudborad/internal/database"
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/database"
+	"cloudborad/internal/fs/peers"
 
 	"github.com/syndtr/goleveldb/leveldb"
 )

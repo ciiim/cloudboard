@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ciiim/cloudborad/internal/fs"
+	"cloudborad/internal/fs"
 )
 
 //TODO: 事务(transaction)系统，提供事务接口，支持事务回滚，实现文件下载、上传、删除的事务

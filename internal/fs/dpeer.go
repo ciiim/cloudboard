@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs/peers"
 )
 
 type DAddr string

@@ -3,7 +3,7 @@ package fs
 import (
 	"errors"
 
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs/peers"
 )
 
 var (

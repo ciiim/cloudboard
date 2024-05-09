@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ciiim/cloudborad/internal/fs"
-	"github.com/ciiim/cloudborad/models"
+	"cloudborad/internal/fs"
+	"cloudborad/models"
 )
 
 const (

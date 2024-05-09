@@ -3,7 +3,7 @@ package models
 import (
 	"testing"
 
-	"github.com/ciiim/cloudborad/internal/database"
+	"cloudborad/internal/database"
 )
 
 func TestQueryAllBoard(t *testing.T) {

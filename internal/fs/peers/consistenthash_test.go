@@ -3,8 +3,8 @@ package peers_test
 import (
 	"testing"
 
-	"github.com/ciiim/cloudborad/internal/fs"
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs"
+	"cloudborad/internal/fs/peers"
 )
 
 func TestCMap(t *testing.T) {

@@ -3,8 +3,8 @@ package server
 import (
 	"log"
 
-	"github.com/ciiim/cloudborad/internal/fs"
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs"
+	"cloudborad/internal/fs/peers"
 )
 
 func (s *Server) ServerInfo() (string, string) {

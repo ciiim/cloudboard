@@ -3,8 +3,9 @@ package fs
 import (
 	"context"
 
-	"github.com/ciiim/cloudborad/internal/fs/fspb"
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs/fspb"
+	"cloudborad/internal/fs/peers"
+
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 

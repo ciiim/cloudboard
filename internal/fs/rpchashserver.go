@@ -3,9 +3,9 @@ package fs
 import (
 	"context"
 
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs/peers"
 
-	"github.com/ciiim/cloudborad/internal/fs/fspb"
+	"cloudborad/internal/fs/fspb"
 )
 
 func (r *rpcFSServer) Get(ctx context.Context, key *fspb.Key) (*fspb.GetResponse, error) {

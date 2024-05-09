@@ -4,8 +4,9 @@ import (
 	"log"
 	"net"
 
-	"github.com/ciiim/cloudborad/internal/fs/fspb"
-	"github.com/ciiim/cloudborad/internal/fs/peers"
+	"cloudborad/internal/fs/fspb"
+	"cloudborad/internal/fs/peers"
+
 	"google.golang.org/grpc"
 )
 

@@ -3,7 +3,7 @@ package fs
 import (
 	"context"
 
-	"github.com/ciiim/cloudborad/internal/fs/fspb"
+	"cloudborad/internal/fs/fspb"
 )
 
 func (r *rpcFSServer) MakeDir(ctx context.Context, req *fspb.TreeFileSystemBasicRequest) (*fspb.Error, error) {

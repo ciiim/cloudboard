@@ -5,8 +5,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/ciiim/cloudborad/errmsg"
-	"github.com/ciiim/cloudborad/internal/database"
+	"cloudborad/errmsg"
+	"cloudborad/internal/database"
+
 	"github.com/redis/go-redis/v9"
 )
 
