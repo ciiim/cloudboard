@@ -1,0 +1,50 @@
+=============== May 10, 2024 (CST) ===============
+02:49:23.429935 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:49:23.432555 db@open opening
+02:49:23.432856 version@stat F·[] S·0B[] Sc·[]
+02:49:23.434398 db@janitor F·2 G·0
+02:49:23.434453 db@open done T·1.863225ms
+02:50:57.210940 db@close closing
+02:50:57.211556 db@close done T·614.267µs
+=============== May 10, 2024 (CST) ===============
+02:50:59.353200 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:50:59.355024 version@stat F·[] S·0B[] Sc·[]
+02:50:59.355045 db@open opening
+02:50:59.355073 journal@recovery F·1
+02:50:59.355286 journal@recovery recovering @1
+02:50:59.359942 memdb@flush created L0@2 N·2 S·173B "cap..ied,v2":"cap..ied,v1"
+02:50:59.360098 version@stat F·[1] S·173B[173B] Sc·[0.25]
+02:50:59.364785 db@janitor F·3 G·0
+02:50:59.364826 db@open done T·9.7741ms
+=============== May 10, 2024 (CST) ===============
+02:51:54.657921 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:51:54.658073 version@stat F·[1] S·173B[173B] Sc·[0.25]
+02:51:54.658082 db@open opening
+02:51:54.658108 journal@recovery F·1
+02:51:54.658260 journal@recovery recovering @3
+02:51:54.658747 version@stat F·[1] S·173B[173B] Sc·[0.25]
+02:51:54.664376 db@janitor F·3 G·0
+02:51:54.664461 db@open done T·6.359869ms
+=============== May 10, 2024 (CST) ===============
+02:54:50.217907 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:54:50.218986 version@stat F·[1] S·173B[173B] Sc·[0.25]
+02:54:50.219009 db@open opening
+02:54:50.219041 journal@recovery F·1
+02:54:50.219226 journal@recovery recovering @5
+02:54:50.220252 version@stat F·[1] S·173B[173B] Sc·[0.25]
+02:54:50.226884 db@janitor F·3 G·0
+02:54:50.226918 db@open done T·7.900211ms
+02:58:42.585496 db@close closing
+02:58:42.586257 db@close done T·759.539µs
+=============== May 10, 2024 (CST) ===============
+02:58:44.499167 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:58:44.499687 version@stat F·[1] S·173B[173B] Sc·[0.25]
+02:58:44.499709 db@open opening
+02:58:44.499741 journal@recovery F·1
+02:58:44.499911 journal@recovery recovering @7
+02:58:44.503287 memdb@flush created L0@9 N·2 S·386B "651..995,v4":"cap..ied,v5"
+02:58:44.503395 version@stat F·[2] S·559B[559B] Sc·[0.50]
+02:58:44.507967 db@janitor F·4 G·0
+02:58:44.508011 db@open done T·8.294249ms
+03:18:03.899348 db@close closing
+03:18:03.900934 db@close done T·1.58336ms

@@ -6,8 +6,9 @@ import (
 	"strconv"
 	"sync"
 
-	dlogger "github.com/ciiim/cloudborad/internal/debug"
-	"github.com/ciiim/cloudborad/internal/dfs/peers"
+	dlogger "cloudborad/internal/debug"
+	"cloudborad/internal/dfs/peers"
+
 	"golang.org/x/exp/slices"
 )
 

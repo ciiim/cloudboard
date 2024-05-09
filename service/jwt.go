@@ -4,7 +4,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/ciiim/cloudborad/errmsg"
+	"cloudborad/errmsg"
+
 	"github.com/golang-jwt/jwt/v4"
 )
 

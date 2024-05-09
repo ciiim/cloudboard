@@ -3,8 +3,9 @@ package router
 import (
 	"log"
 
-	dlogger "github.com/ciiim/cloudborad/internal/debug"
-	"github.com/ciiim/cloudborad/service"
+	dlogger "cloudborad/internal/debug"
+	"cloudborad/service"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )

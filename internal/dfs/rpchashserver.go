@@ -3,9 +3,9 @@ package dfs
 import (
 	"context"
 
-	"github.com/ciiim/cloudborad/internal/dfs/peers"
+	"cloudborad/internal/dfs/peers"
 
-	"github.com/ciiim/cloudborad/internal/dfs/fspb"
+	"cloudborad/internal/dfs/fspb"
 )
 
 func (r *rpcFSServer) Get(ctx context.Context, key *fspb.Key) (*fspb.GetResponse, error) {

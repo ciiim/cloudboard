@@ -3,8 +3,8 @@ package dfs
 import (
 	"time"
 
-	"github.com/ciiim/cloudborad/internal/dfs/peers"
-	"github.com/ciiim/cloudborad/internal/random"
+	"cloudborad/internal/dfs/peers"
+	"cloudborad/internal/random"
 )
 
 var (
@@ -102,9 +102,9 @@ func (p *DPeer) pong() error {
 
 // 请求拉取对方所有节点信息
 func (p *DPeer) pull(target DPeerInfo) (dgossip, error) {
-
+	return dgossip{}, nil
 }
 
 func (p *DPeer) gossip(msg dgossip, dpi DPeerInfo) (dgossipResponse, error) {
-
+	return dgossipResponse{}, nil
 }

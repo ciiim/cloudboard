@@ -1,8 +1,9 @@
 package dfs
 
 import (
-	"github.com/ciiim/cloudborad/internal/dfs/fspb"
-	"github.com/ciiim/cloudborad/internal/fs"
+	"cloudborad/internal/dfs/fspb"
+	"cloudborad/internal/fs"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

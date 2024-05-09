@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	dlogger "github.com/ciiim/cloudborad/internal/debug"
-	"github.com/ciiim/cloudborad/internal/dfs/peers"
-	"github.com/ciiim/cloudborad/internal/fs"
+	dlogger "cloudborad/internal/debug"
+	"cloudborad/internal/dfs/peers"
+	"cloudborad/internal/fs"
 )
 
 type HashDFile struct {

@@ -3,9 +3,9 @@ package server
 import (
 	"log"
 
-	dlogger "github.com/ciiim/cloudborad/internal/debug"
-	"github.com/ciiim/cloudborad/internal/dfs"
-	"github.com/ciiim/cloudborad/internal/dfs/peers"
+	dlogger "cloudborad/internal/debug"
+	"cloudborad/internal/dfs"
+	"cloudborad/internal/dfs/peers"
 )
 
 func (s *Server) ServerInfo() (string, string) {

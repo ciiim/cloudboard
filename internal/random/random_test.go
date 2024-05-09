@@ -3,7 +3,7 @@ package random_test
 import (
 	"testing"
 
-	"github.com/ciiim/cloudborad/internal/random"
+	"cloudborad/internal/random"
 )
 
 func TestRandom(t *testing.T) {

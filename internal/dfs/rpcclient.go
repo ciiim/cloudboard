@@ -6,11 +6,11 @@ import (
 	"log"
 	"time"
 
-	dlogger "github.com/ciiim/cloudborad/internal/debug"
-	"github.com/ciiim/cloudborad/internal/dfs/peers"
-	"github.com/ciiim/cloudborad/internal/fs"
+	dlogger "cloudborad/internal/debug"
+	"cloudborad/internal/dfs/peers"
+	"cloudborad/internal/fs"
 
-	"github.com/ciiim/cloudborad/internal/dfs/fspb"
+	"cloudborad/internal/dfs/fspb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

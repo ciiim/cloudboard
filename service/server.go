@@ -1,6 +1,6 @@
 package service
 
-import "github.com/ciiim/cloudborad/internal/dfs"
+import "cloudborad/internal/dfs"
 
 func (s *Service) JoinCluster(name, addr string) error {
 	return s.fileServer.JoinCluster(name, addr)

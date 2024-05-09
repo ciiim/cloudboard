@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	dlogger "github.com/ciiim/cloudborad/internal/debug"
-	"github.com/ciiim/cloudborad/internal/dfs/peers"
-	"github.com/ciiim/cloudborad/internal/dfs/peers/chash"
+	dlogger "cloudborad/internal/debug"
+	"cloudborad/internal/dfs/peers"
+	"cloudborad/internal/dfs/peers/chash"
 )
 
 type DAddr string
@@ -74,7 +74,7 @@ func NewDPeer(name, addr string, replicas int, fn chash.CHash, settings SyncSett
 	}
 
 	//Add self to hashMap
-	// p.hashMap.Add(info)
+	p.hashMap.Add(*p.info)
 	return p
 }
 
@@ -170,11 +170,18 @@ func (p *DPeer) PList() []peers.PeerInfo {
 }
 
 func (p *DPeer) Info() peers.PeerInfo {
-	return p.info
+	return *p.info
 }
 
 func (pi DPeerInfo) Equal(other peers.PeerInfo) bool {
-	o := other.(DPeerInfo)
+	o, ok := other.(DPeerInfo)
+	if !ok {
+		o, ok := other.(*DPeerInfo)
+		if !ok {
+			return false
+		}
+		return pi.PeerName == o.PeerName && pi.PeerAddr == o.PeerAddr
+	}
 	return pi.PeerName == o.PeerName && pi.PeerAddr == o.PeerAddr
 }
 

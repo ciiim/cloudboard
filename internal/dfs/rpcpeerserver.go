@@ -3,8 +3,9 @@ package dfs
 import (
 	"context"
 
-	"github.com/ciiim/cloudborad/internal/dfs/fspb"
-	"github.com/ciiim/cloudborad/internal/dfs/peers"
+	"cloudborad/internal/dfs/fspb"
+	"cloudborad/internal/dfs/peers"
+
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -71,5 +72,5 @@ func (r *rpcFSServer) SyncPull(ctx context.Context, pullReq *fspb.SyncPullReques
 }
 
 func (r *rpcFSServer) Gossip(ctx context.Context, gossipMsg *fspb.GossipMsg) (*fspb.GossipAck, error) {
-
+	return nil, nil
 }

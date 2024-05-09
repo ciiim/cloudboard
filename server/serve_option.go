@@ -3,9 +3,9 @@ package server
 import (
 	"log"
 
-	"github.com/ciiim/cloudborad/internal/dfs"
-	"github.com/ciiim/cloudborad/internal/dfs/peers"
-	"github.com/ciiim/cloudborad/internal/fs"
+	"cloudborad/internal/dfs"
+	"cloudborad/internal/dfs/peers"
+	"cloudborad/internal/fs"
 )
 
 const (

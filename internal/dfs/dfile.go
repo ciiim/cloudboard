@@ -3,7 +3,7 @@ package dfs
 import (
 	"time"
 
-	"github.com/ciiim/cloudborad/internal/dfs/peers"
+	"cloudborad/internal/dfs/peers"
 )
 
 type HashDFileI interface {

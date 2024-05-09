@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ciiim/cloudborad/internal/database"
-	dlogger "github.com/ciiim/cloudborad/internal/debug"
+	"cloudborad/internal/database"
+	dlogger "cloudborad/internal/debug"
 
 	"github.com/syndtr/goleveldb/leveldb"
 )
