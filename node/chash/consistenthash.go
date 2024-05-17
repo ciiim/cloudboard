@@ -18,7 +18,7 @@ type CHashItem interface {
 }
 
 // 用于实现向后查找真实节点
-type innerItem struct {
+type InnerItem struct {
 
 	//virtual 是否是虚拟节点
 	virtual bool
@@ -27,22 +27,22 @@ type innerItem struct {
 	real CHashItem
 }
 
-func warp2InnerItem(real CHashItem, virtual bool) *innerItem {
-	return &innerItem{
+func warp2InnerItem(real CHashItem, virtual bool) *InnerItem {
+	return &InnerItem{
 		virtual: virtual,
 		real:    real,
 	}
 }
 
-func (i *innerItem) ID() string {
+func (i *InnerItem) ID() string {
 	return i.real.ID()
 }
 
-func (i *innerItem) Compare(item CHashItem) bool {
+func (i *InnerItem) Compare(item CHashItem) bool {
 	return i.real.ID() == item.ID()
 }
 
-func (i *innerItem) IsVirtual() bool {
+func (i *InnerItem) IsVirtual() bool {
 	return i.virtual
 }
 
@@ -84,11 +84,6 @@ func NewConsistentHash(replicas int, fn ConsistentHashFn) *ConsistentHash {
 		m.hashFn = DefaultHashFn
 	}
 	return m
-
-}
-
-func (c *ConsistentHash) Len() int64 {
-	return atomic.LoadInt64(&c.count)
 }
 
 // []byte READ ONLY
@@ -97,14 +92,8 @@ func string2Bytes(s string) (readOnly []byte) {
 	return unsafe.Slice(sd, len(s))
 }
 
-func (c *ConsistentHash) GetByID(id string) CHashItem {
-	c.hashRingMutex.RLock()
-	defer c.hashRingMutex.RUnlock()
-	item, ok := c.hashMap[c.hashFn(string2Bytes(id))]
-	if !ok {
-		return nil
-	}
-	return item.(*innerItem).real
+func (c *ConsistentHash) Len() int64 {
+	return atomic.LoadInt64(&c.count)
 }
 
 func (c *ConsistentHash) Add(item CHashItem) {
@@ -176,74 +165,6 @@ func (c *ConsistentHash) Del(item CHashItem) {
 	}
 
 	atomic.AddInt64(&c.count, -1)
-}
-
-func (c *ConsistentHash) Get(key []byte) CHashItem {
-
-	c.hashRingMutex.RLock()
-	defer c.hashRingMutex.RUnlock()
-
-	if len(c.hashRing) == 0 {
-		return nil
-	}
-	hash := c.hashFn(key)
-
-	index := sort.Search(len(c.hashRing), func(i int) bool { return c.hashRing[i] >= hash })
-	item := c.hashMap[c.hashRing[index%len(c.hashRing)]]
-	realItem, ok := item.(*innerItem)
-	if ok {
-		return realItem.real
-	}
-	return nil
-}
-
-// 获取key最接近的节点以及后 n 个不相同的节点
-// 如果节点数不足 n 个，则返回所有不重复的节点
-func (c *ConsistentHash) GetN(key []byte, n int) []CHashItem {
-	if n <= 0 {
-		return nil
-	}
-
-	c.hashRingMutex.RLock()
-	defer c.hashRingMutex.RUnlock()
-
-	if len(c.hashRing) == 0 {
-		return nil
-	}
-
-	findNMap := make(map[string]CHashItem)
-
-	hash := c.hashFn(key)
-
-	// 获取最接近的节点
-	index := sort.Search(len(c.hashRing), func(i int) bool { return c.hashRing[i] >= hash })
-	items := make([]CHashItem, 0, n)
-
-	items = append(items, c.hashMap[c.hashRing[index%len(c.hashRing)]].(*innerItem).real)
-	findNMap[items[0].ID()] = items[0]
-
-	// 剩余需要遍历的节点数
-	remaining := len(c.hashRing) - 1
-
-	// 获取后 n-1 个不相同的节点
-	index++
-	for count := 1; count < n && remaining > 0; func() {
-		index++
-		remaining--
-	}() {
-		item := c.hashMap[c.hashRing[index%len(c.hashRing)]].(*innerItem).real
-
-		// 如果节点已经存在，则跳过
-		if compare(item, findNMap) {
-			continue
-		}
-
-		// 添加节点
-		items = append(items, item)
-		findNMap[item.ID()] = item
-		count++
-	}
-	return items
 }
 
 func compare(a CHashItem, m map[string]CHashItem) bool {

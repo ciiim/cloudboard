@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	HashChunkSystemService_Has_FullMethodName               = "/fspb.HashChunkSystemService/Has"
 	HashChunkSystemService_Get_FullMethodName               = "/fspb.HashChunkSystemService/Get"
 	HashChunkSystemService_Put_FullMethodName               = "/fspb.HashChunkSystemService/Put"
 	HashChunkSystemService_Delete_FullMethodName            = "/fspb.HashChunkSystemService/Delete"
@@ -33,6 +34,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HashChunkSystemServiceClient interface {
+	Has(ctx context.Context, in *Key, opts ...grpc.CallOption) (*HasResponse, error)
 	Get(ctx context.Context, in *Key, opts ...grpc.CallOption) (HashChunkSystemService_GetClient, error)
 	Put(ctx context.Context, opts ...grpc.CallOption) (HashChunkSystemService_PutClient, error)
 	Delete(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Error, error)
@@ -49,6 +51,15 @@ type hashChunkSystemServiceClient struct {
 
 func NewHashChunkSystemServiceClient(cc grpc.ClientConnInterface) HashChunkSystemServiceClient {
 	return &hashChunkSystemServiceClient{cc}
+}
+
+func (c *hashChunkSystemServiceClient) Has(ctx context.Context, in *Key, opts ...grpc.CallOption) (*HasResponse, error) {
+	out := new(HasResponse)
+	err := c.cc.Invoke(ctx, HashChunkSystemService_Has_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *hashChunkSystemServiceClient) Get(ctx context.Context, in *Key, opts ...grpc.CallOption) (HashChunkSystemService_GetClient, error) {
@@ -223,6 +234,7 @@ func (c *hashChunkSystemServiceClient) UpdateReplicaInfo(ctx context.Context, in
 // All implementations must embed UnimplementedHashChunkSystemServiceServer
 // for forward compatibility
 type HashChunkSystemServiceServer interface {
+	Has(context.Context, *Key) (*HasResponse, error)
 	Get(*Key, HashChunkSystemService_GetServer) error
 	Put(HashChunkSystemService_PutServer) error
 	Delete(context.Context, *Key) (*Error, error)
@@ -238,6 +250,9 @@ type HashChunkSystemServiceServer interface {
 type UnimplementedHashChunkSystemServiceServer struct {
 }
 
+func (UnimplementedHashChunkSystemServiceServer) Has(context.Context, *Key) (*HasResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Has not implemented")
+}
 func (UnimplementedHashChunkSystemServiceServer) Get(*Key, HashChunkSystemService_GetServer) error {
 	return status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
@@ -274,6 +289,24 @@ type UnsafeHashChunkSystemServiceServer interface {
 
 func RegisterHashChunkSystemServiceServer(s grpc.ServiceRegistrar, srv HashChunkSystemServiceServer) {
 	s.RegisterService(&HashChunkSystemService_ServiceDesc, srv)
+}
+
+func _HashChunkSystemService_Has_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Key)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HashChunkSystemServiceServer).Has(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HashChunkSystemService_Has_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HashChunkSystemServiceServer).Has(ctx, req.(*Key))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _HashChunkSystemService_Get_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -449,6 +482,10 @@ var HashChunkSystemService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "fspb.HashChunkSystemService",
 	HandlerType: (*HashChunkSystemServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Has",
+			Handler:    _HashChunkSystemService_Has_Handler,
+		},
 		{
 			MethodName: "Delete",
 			Handler:    _HashChunkSystemService_Delete_Handler,

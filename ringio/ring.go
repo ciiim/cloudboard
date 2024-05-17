@@ -23,11 +23,11 @@ type Ring struct {
 	StorageSystem IDHashChunkSystem
 	FrontSystem   ITreeDFileSystem
 
+	NodeService *node.NodeService
+
 	config *RingConfig
 
 	ringName string
-
-	nodeService *node.NodeService
 
 	rpcServer *rpcServer
 
@@ -67,7 +67,7 @@ func NewRing(config *RingConfig) *Ring {
 		ringName: config.Name,
 
 		// 节点服务
-		nodeService: node,
+		NodeService: node,
 
 		// 存储系统
 		StorageSystem: storageSystem,
@@ -87,20 +87,20 @@ func NewRing(config *RingConfig) *Ring {
 }
 
 func (r *Ring) Serve() {
-	if r.nodeService == nil {
+	if r.NodeService == nil {
 		r.l.Error("[Ring] No node service found")
 		return
 	}
 	go func() {
-		_ = r.nodeService.Run()
+		_ = r.NodeService.Run()
 	}()
-	rpcPort, _ := strconv.ParseInt(r.nodeService.Self().Port(), 10, 64)
+	rpcPort, _ := strconv.ParseInt(r.NodeService.Self().Port(), 10, 64)
 
 	r.l.Info("[Ring] Service serve on", "port", rpcPort)
 	r.rpcServer.serve(strconv.FormatInt(rpcPort, 10))
 }
 
 func (r *Ring) Close() error {
-	r.nodeService.Shutdown()
+	r.NodeService.Shutdown()
 	return nil
 }

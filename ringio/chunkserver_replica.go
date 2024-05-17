@@ -35,7 +35,7 @@ func (r *rpcServer) PutReplica(stream fspb.HashChunkSystemService_PutReplicaServ
 	}
 	replicaInfo.Custom = nil
 	//新建一个chunk
-	w, err := r.hcs.local().CreateChunk(chunkInfo.ChunkHash, chunkInfo.ChunkName, chunkInfo.ChunkSize, hashchunk.NewExtraInfo("replica", replicaInfo))
+	w, err := r.hcs.Local().CreateChunk(chunkInfo.ChunkHash, chunkInfo.ChunkName, chunkInfo.ChunkSize, hashchunk.NewExtraInfo("replica", replicaInfo))
 	if err != nil {
 		return util.WarpWithDetail(err)
 	}
@@ -70,7 +70,7 @@ func (r *rpcServer) PutReplica(stream fspb.HashChunkSystemService_PutReplicaServ
 }
 
 func (s *rpcServer) GetReplica(key *fspb.Key, stream fspb.HashChunkSystemService_GetReplicaServer) error {
-	chunk, err := s.hcs.local().Get(key.GetKey())
+	chunk, err := s.hcs.Local().Get(key.GetKey())
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func (s *rpcServer) CheckReplica(ctx context.Context, req *fspb.CheckReplicaRequ
 	infoCh := make(chan *hashchunk.Info)
 	errCh := make(chan error)
 	go func() {
-		info, err := s.hcs.local().GetInfo(req.Info.Key)
+		info, err := s.hcs.Local().GetInfo(req.Info.Key)
 		if err != nil {
 			errCh <- err
 			return
@@ -217,7 +217,7 @@ func (s *rpcServer) UpdateReplicaInfo(ctx context.Context, remoteInfo *fspb.Repl
 	updated := make(chan struct{})
 	errCh := make(chan *fspb.Error)
 	go func() {
-		info, err := s.hcs.local().GetInfo(remoteInfo.Key)
+		info, err := s.hcs.Local().GetInfo(remoteInfo.Key)
 		if err != nil {
 			errCh <- &fspb.Error{Operation: "Update Replica Info", Err: err.Error()}
 			return
@@ -245,7 +245,7 @@ func (s *rpcServer) UpdateReplicaInfo(ctx context.Context, remoteInfo *fspb.Repl
 		remoteReplicaInfo.Custom = nil
 		info.ExtraInfo.Extra = remoteReplicaInfo
 
-		if err := s.hcs.local().UpdateInfo(remoteReplicaInfo.Key, func(oldInfo *hashchunk.Info) {
+		if err := s.hcs.Local().UpdateInfo(remoteReplicaInfo.Key, func(oldInfo *hashchunk.Info) {
 			*oldInfo = *info
 		}); err != nil {
 			errCh <- &fspb.Error{Operation: "Update Replica Info", Err: err.Error()}

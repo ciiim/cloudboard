@@ -1,21 +1,13 @@
 package tree
 
 import (
-	"fmt"
-	"io"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/ciiim/cloudborad/storage/types"
-)
-
-const (
-	SPACE_DEFAULT_CAP = 1024 * 1024 * 100 // 100MB
 )
 
 type DirEntry = fs.DirEntry
@@ -42,6 +34,8 @@ func NewTreeFileSystem(config *Config) *TreeFileSystem {
 	}
 	t := &TreeFileSystem{
 		config: config,
+
+		usingSpace: make(map[string]*Space),
 	}
 	return t
 }
@@ -65,10 +59,26 @@ func (t *TreeFileSystem) NewLocalSpace(space string, cap types.Byte) error {
 	if err != nil {
 		return err
 	}
-
-	_, err = file.WriteString(fmt.Sprintf("%d,0", cap))
-
+	defer file.Close()
 	return err
+}
+
+func (t *TreeFileSystem) AllSpaces() []SpaceInfo {
+	var spaces []SpaceInfo
+	filepath.Walk(t.config.RootPath, func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() {
+			if info.Name() == BASE_DIR {
+				space := filepath.Dir(path)
+				space = filepath.Base(space)
+				spaces = append(spaces, SpaceInfo{
+					SpaceName: space,
+				})
+			}
+		}
+		return nil
+	})
+	return spaces
+
 }
 
 func (t *TreeFileSystem) GetLocalSpace(space string) *Space {
@@ -83,30 +93,15 @@ func (t *TreeFileSystem) GetLocalSpace(space string) *Space {
 	if s != nil {
 		return s
 	}
-
-	file, err := os.Open(filepath.Join(t.config.RootPath, space, STAT_FILE))
+	_, err := os.Stat(filepath.Join(t.config.RootPath, space, STAT_FILE))
 	if err != nil {
-		log.Println("[Space] Missing stat file", space)
+		log.Println("[Space] Missing stat file: ", space)
 		return nil
 	}
-	defer file.Close()
-	b, err := io.ReadAll(file)
-	if err != nil {
-		return nil
-	}
-	capANDoccupy := strings.Split(string(b), ",")
-	if len(capANDoccupy) != 2 {
-		log.Println("[Space] stat file error")
-		return nil
-	}
-	cap, _ := strconv.ParseInt(capANDoccupy[0], 10, 64)
-	occupy, _ := strconv.ParseInt(capANDoccupy[1], 10, 64)
 	s = &Space{
 		root:     t.config.RootPath,
 		spaceKey: space,
 		base:     BASE_DIR,
-		capacity: cap,
-		occupy:   occupy,
 	}
 
 	t.mu.Lock()

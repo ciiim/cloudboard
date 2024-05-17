@@ -222,6 +222,18 @@ func (hcs *HashChunkSystem) StoreReader(key []byte, chunkName string, size int64
 	return nil
 }
 
+func (hcs *HashChunkSystem) Has(key []byte) (bool, error) {
+	if len(key) == 0 {
+		return false, ErrEmptyKey
+	}
+
+	hcs.rwMutex.RLock()
+	defer hcs.rwMutex.RUnlock()
+
+	return hcs.isExist(key), nil
+
+}
+
 func (hcs *HashChunkSystem) Get(key []byte) (*HashChunk, error) {
 	if len(key) == 0 {
 		return nil, ErrEmptyKey

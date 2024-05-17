@@ -3,6 +3,8 @@ package modules
 import (
 	"errors"
 	"sync"
+
+	"github.com/ciiim/cloudborad/modules/modulestype"
 )
 
 var (
@@ -13,41 +15,31 @@ var (
 	Modules *ModuleManager
 )
 
-type ActionType int
-type ModuleType int
-
-const (
-	ChunkRead ActionType = iota
-	ChunkWrite
-	ChunkDelete
-
-	FileRead
-	FileWrite
-	FileDelete
-
-	NodeJoin
-	NodeAlive
-	NodeDead
-)
-
-const (
-	Middleware ModuleType = iota
-	Feature
-)
-
 type Module interface {
-	Load(params any) error
+	Init(params any) error
 	Name() string
+	Type() modulestype.ModuleType
+	Interests() []modulestype.Action
 	OnError(err error)
 }
 
-// MiddlewareModule 中间件模块
+/*
+MiddlewareModule 中间件模块
+
+拦截文件流，对文件流进行处理，交给下一个中间件。
+若没有下一个中间件，则交给最终的功能模块处理。
+*/
 type MiddlewareModule interface {
 	Module
 }
 
-// FeatureModule 功能模块
+/*
+FeatureModule 功能模块
+
+不对文件进行直接处理，不拦截文件流。
+*/
 type FeatureModule interface {
+	Module
 }
 
 type ModuleManager struct {
@@ -58,11 +50,6 @@ func new() *ModuleManager {
 	return &ModuleManager{
 		modules: sync.Map{},
 	}
-}
-
-func init() {
-	Modules = new()
-	Modules.reg()
 }
 
 func (m *ModuleManager) reg(mod Module) {

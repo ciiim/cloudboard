@@ -61,6 +61,25 @@ func warpTempFileReadSeekCloser(file *os.File) io.ReadSeekCloser {
 	return &tempFileReadSeekCloser{file}
 }
 
+func (c *rpcHashClient) has(ctx context.Context, ni *node.Node, key []byte) (has bool, err error) {
+	defer func(err *error) {
+		if *err != nil && *err != io.EOF {
+			*err = errors.New("remote has chunk: " + (*err).Error())
+		}
+	}(&err)
+
+	client, close, err := c.dialClient(ctx, ni)
+	if err != nil {
+		return false, err
+	}
+	defer close()
+	resp, err := client.Has(ctx, &fspb.Key{Key: key})
+	if err != nil {
+		return false, err
+	}
+	return resp.GetHas(), nil
+}
+
 func (c *rpcHashClient) get(ctx context.Context, ni *node.Node, key []byte) (chunk *DHashChunk, err error) {
 	defer func(err *error) {
 		if *err != nil && *err != io.EOF {

@@ -10,6 +10,7 @@ import (
 	"github.com/ciiim/cloudborad/storage/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type rpcTreeClient struct {
@@ -17,6 +18,62 @@ type rpcTreeClient struct {
 
 func newRPCTreeClient() *rpcTreeClient {
 	return &rpcTreeClient{}
+}
+
+func (r *rpcTreeClient) getSpaceStat(ctx context.Context, ni *node.Node, space string, key string) (*tree.SpaceStatElement, error) {
+	conn, err := grpc.Dial(ni.Addr(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := fspb.NewTreeFileSystemServiceClient(conn)
+	resp, err := client.GetSpaceStat(ctx, &fspb.GetSpaceStatRequest{
+		Space: &fspb.SpaceRequest{Space: space},
+		Key:   key,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return PbSpaceStatToSpaceStat(resp.GetStat()), nil
+}
+
+func (r *rpcTreeClient) setSpaceStat(ctx context.Context, ni *node.Node, space string, e *tree.SpaceStatElement) error {
+	conn, err := grpc.Dial(ni.Addr(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	client := fspb.NewTreeFileSystemServiceClient(conn)
+	_, err = client.SetSpaceStat(ctx, &fspb.SetSpaceStatRequest{
+		Space: &fspb.SpaceRequest{Space: space},
+		Stat: &fspb.SpaceStat{
+			Key:   e.Key(),
+			Value: e.Value(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+var empty = &emptypb.Empty{}
+
+func (r *rpcTreeClient) allSpaces(ctx context.Context, ni *node.Node) ([]tree.SpaceInfo, error) {
+	conn, err := grpc.Dial(ni.Addr(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := fspb.NewTreeFileSystemServiceClient(conn)
+	resp, err := client.AllSpaces(ctx, empty)
+	if err != nil {
+		return nil, err
+	}
+	return PbSpacesToSpaces(resp), nil
 }
 
 func (r *rpcTreeClient) getMetadata(ctx context.Context, ni *node.Node, space string, base string, name string) ([]byte, error) {

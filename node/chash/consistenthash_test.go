@@ -1,6 +1,7 @@
 package chash_test
 
 import (
+	"fmt"
 	"hash/crc32"
 	"hash/crc64"
 	"strconv"
@@ -12,6 +13,33 @@ import (
 func string2Bytes(s string) []byte {
 	sd := unsafe.StringData(s)
 	return unsafe.Slice(sd, len(s))
+}
+
+type HType interface {
+	Hello() int
+}
+
+type Hello struct {
+	s int
+}
+
+func (h *Hello) Hello() int {
+	return h.s
+}
+
+type Q[T HType] struct {
+}
+
+func (q *Q[T]) Handle(s int) T {
+	if s == 0 {
+		return HType(nil).(T)
+	}
+	return HType(&Hello{s: s}).(T)
+}
+
+func Test(t *testing.T) {
+	q := Q[*Hello]{}
+	fmt.Printf("q.Handle(0).s: %v\n", q.Handle(10).s)
 }
 
 func TestCrc64(t *testing.T) {

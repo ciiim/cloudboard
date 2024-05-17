@@ -65,6 +65,64 @@ func (dt *DTreeFileSystem) DeleteSpace(space string) error {
 	return dt.remote.deleteSpace(ctx, ni, space)
 }
 
+// 从所有节点收集Space
+func (dt *DTreeFileSystem) AllSpaces() []tree.SpaceInfo {
+	res := make([]tree.SpaceInfo, 0)
+	for _, ni := range dt.ns.GetAllReal() {
+		if ni == nil {
+			continue
+		}
+		if ni.Equal(dt.ns.Self()) {
+			res = append(res, dt.local.AllSpaces()...)
+		} else {
+			ctx, cancel := ctxWithTimeout()
+			defer cancel()
+			spaces, err := dt.remote.allSpaces(ctx, ni)
+			if err != nil {
+				dt.l.Error(err.Error())
+				continue
+			}
+			res = append(res, spaces...)
+		}
+	}
+	return res
+}
+
+func (dt *DTreeFileSystem) GetSpaceStat(space, key string) (*tree.SpaceStatElement, error) {
+	ni := dt.pickNode([]byte(space))
+	if ni == nil {
+		return nil, tree.ErrSpaceNotFound
+	}
+	if dt.ns.Self().Equal(ni) {
+		space := dt.local.GetLocalSpace(space)
+		if space == nil {
+			return nil, tree.ErrSpaceNotFound
+		}
+		return space.GetStatElement(key)
+	}
+	ctx, cancel := ctxWithTimeout()
+	defer cancel()
+	return dt.remote.getSpaceStat(ctx, ni, space, key)
+}
+
+func (dt *DTreeFileSystem) SetSpaceStat(space string, e *tree.SpaceStatElement) error {
+	ni := dt.pickNode([]byte(space))
+	if ni == nil {
+		return tree.ErrSpaceNotFound
+	}
+	if dt.ns.Self().Equal(ni) {
+		space := dt.local.GetLocalSpace(space)
+		if space == nil {
+			return tree.ErrSpaceNotFound
+		}
+		return space.SetStatElement(e)
+	}
+	ctx, cancel := ctxWithTimeout()
+	defer cancel()
+	return dt.remote.setSpaceStat(ctx, ni, space, e)
+
+}
+
 func (dt *DTreeFileSystem) MakeDir(space, base, name string) error {
 	ni := dt.pickNode([]byte(space))
 	if ni == nil {

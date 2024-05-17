@@ -48,10 +48,7 @@ func (r *recoveringChunk) isRecovering(key []byte) bool {
 func (r *recoveringChunk) registerChunk(key []byte) bool {
 	k := string(key)
 	_, exist := r.m.LoadOrStore(k, &count{0})
-	if exist {
-		return false
-	}
-	return true
+	return !exist
 }
 
 func (r *recoveringChunk) unregisterChunk(key []byte) {

@@ -8,10 +8,10 @@ import (
 )
 
 type Node struct {
-	nodeID   string
-	nodeIP   string
-	nodePort string
-	nodeName string
+	NodeID   string `json:"node_id"`
+	NodeIP   string `json:"node_ip"`
+	NodePort string `json:"node_port"`
+	NodeName string `json:"node_name"`
 }
 
 var _ chash.CHashItem = (*Node)(nil)
@@ -20,10 +20,10 @@ func NewNode(nodeAddr string, uniqueNodeName string) *Node {
 	id := nodeAddr + uniqueNodeName
 	addr, port, _ := net.SplitHostPort(nodeAddr)
 	return &Node{
-		nodeID:   id,
-		nodeIP:   addr,
-		nodePort: port,
-		nodeName: uniqueNodeName,
+		NodeID:   id,
+		NodeIP:   addr,
+		NodePort: port,
+		NodeName: uniqueNodeName,
 	}
 }
 
@@ -44,21 +44,21 @@ func (n *Node) Compare(other chash.CHashItem) bool {
 }
 
 func (n Node) Name() string {
-	return n.nodeName
+	return n.NodeName
 }
 
 func (n Node) Addr() string {
-	return net.JoinHostPort(n.nodeIP, n.nodePort)
+	return net.JoinHostPort(n.NodeIP, n.NodePort)
 }
 
 func (n Node) IP() string {
-	return n.nodeIP
+	return n.NodeIP
 }
 
 func (n Node) Port() string {
-	return n.nodePort
+	return n.NodePort
 }
 
 func (n Node) ID() string {
-	return n.nodeID
+	return n.NodeID
 }

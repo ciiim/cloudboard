@@ -10,6 +10,7 @@ type IHashChunkSystem interface {
 	StoreBytes(key []byte, name string, size int64, value []byte, extra *ExtraInfo) error
 	StoreReader(key []byte, name string, size int64, v io.Reader, extra *ExtraInfo) error
 
+	Has(key []byte) (bool, error)
 	Get(key []byte) (*HashChunk, error)
 	Delete(key []byte) error
 

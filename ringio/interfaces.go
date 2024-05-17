@@ -23,9 +23,11 @@ type IDHashChunkSystem interface {
 	// 本地入口方法
 	//
 	// 可绕过副本服务
-	local() hashchunk.IHashChunkSystem
+	Local() hashchunk.IHashChunkSystem
 
 	Config() *DHCSConfig
+
+	Has(key []byte) (bool, error)
 
 	Get(key []byte) (IDHashChunk, error)
 
@@ -53,8 +55,13 @@ type ITreeDFileSystem interface {
 	// 新建Space
 	NewSpace(space string, cap types.Byte) error
 
+	AllSpaces() []tree.SpaceInfo
+
 	// 删除Space
 	DeleteSpace(space string) error
+
+	GetSpaceStat(space string, key string) (*tree.SpaceStatElement, error)
+	SetSpaceStat(space string, stat *tree.SpaceStatElement) error
 
 	// Space 操作
 	MakeDir(space, base, dir string) error

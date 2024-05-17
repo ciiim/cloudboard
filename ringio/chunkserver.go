@@ -8,6 +8,14 @@ import (
 	"github.com/ciiim/cloudborad/ringio/fspb"
 )
 
+func (r *rpcServer) Has(ctx context.Context, key *fspb.Key) (*fspb.HasResponse, error) {
+	has, err := r.hcs.Local().Has(key.Key)
+	if err != nil {
+		return &fspb.HasResponse{}, err
+	}
+	return &fspb.HasResponse{Has: has}, nil
+}
+
 func (r *rpcServer) Get(key *fspb.Key, stream fspb.HashChunkSystemService_GetServer) error {
 	chunk, err := r.hcs.GetLocally(key.Key)
 	if err != nil {

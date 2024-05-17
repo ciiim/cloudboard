@@ -19,6 +19,11 @@ message PutRequest {
     bytes data = 4;
 }
 
+message HasResponse {
+    Error error = 1;
+    bool has = 2;
+}
+
 message GetResponse {
     Error error = 1;
     bytes data = 2;
@@ -26,6 +31,7 @@ message GetResponse {
 }
 
 service HashChunkSystemService {
+    rpc Has(Key) returns (HasResponse) {}
     rpc Get(Key) returns (stream GetResponse) {}
     rpc Put(stream PutRequest) returns (Error) {}
     rpc Delete(Key) returns (Error) {}

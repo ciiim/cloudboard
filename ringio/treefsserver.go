@@ -5,7 +5,34 @@ import (
 
 	"github.com/ciiim/cloudborad/ringio/fspb"
 	"github.com/ciiim/cloudborad/storage/types"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+func (r *rpcServer) GetSapceStat(ctx context.Context, req *fspb.GetSpaceStatRequest) (*fspb.GetSpaceStatResponse, error) {
+	stat, err := r.tfs.Local().GetLocalSpace(req.GetSpace().GetSpace()).GetStatElement(req.GetKey())
+	if err != nil {
+		return nil, nil
+	}
+	return &fspb.GetSpaceStatResponse{
+		Stat: &fspb.SpaceStat{
+			Key:   stat.Key(),
+			Value: stat.Value(),
+		},
+	}, nil
+}
+
+func (r *rpcServer) SetSapceStat(ctx context.Context, req *fspb.SetSpaceStatRequest) (*fspb.Error, error) {
+	err := r.tfs.Local().GetLocalSpace(req.GetSpace().GetSpace()).SetStatElement(PbSpaceStatToSpaceStat(req.GetStat()))
+	if err != nil {
+		return &fspb.Error{Err: err.Error()}, nil
+	}
+	return &fspb.Error{}, nil
+}
+
+func (r *rpcServer) AllSpaces(ctx context.Context, req *emptypb.Empty) (*fspb.SpaceInfos, error) {
+	spaces := r.tfs.Local().AllSpaces()
+	return SpacesToPbSpaces(spaces), nil
+}
 
 func (r *rpcServer) MakeDir(ctx context.Context, req *fspb.TreeFileSystemBasicRequest) (*fspb.Error, error) {
 	err := r.tfs.MakeDir(req.Space, req.Base, req.Name)

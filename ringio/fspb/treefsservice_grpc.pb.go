@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -21,6 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	TreeFileSystemService_NewSpace_FullMethodName       = "/fspb.TreeFileSystemService/NewSpace"
 	TreeFileSystemService_DeleteSpace_FullMethodName    = "/fspb.TreeFileSystemService/DeleteSpace"
+	TreeFileSystemService_AllSpaces_FullMethodName      = "/fspb.TreeFileSystemService/AllSpaces"
+	TreeFileSystemService_GetSpaceStat_FullMethodName   = "/fspb.TreeFileSystemService/GetSpaceStat"
+	TreeFileSystemService_SetSpaceStat_FullMethodName   = "/fspb.TreeFileSystemService/SetSpaceStat"
 	TreeFileSystemService_MakeDir_FullMethodName        = "/fspb.TreeFileSystemService/MakeDir"
 	TreeFileSystemService_RenameDir_FullMethodName      = "/fspb.TreeFileSystemService/RenameDir"
 	TreeFileSystemService_DeleteDir_FullMethodName      = "/fspb.TreeFileSystemService/DeleteDir"
@@ -36,6 +40,9 @@ const (
 type TreeFileSystemServiceClient interface {
 	NewSpace(ctx context.Context, in *NewSpaceRequest, opts ...grpc.CallOption) (*Error, error)
 	DeleteSpace(ctx context.Context, in *SpaceRequest, opts ...grpc.CallOption) (*Error, error)
+	AllSpaces(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*SpaceInfos, error)
+	GetSpaceStat(ctx context.Context, in *GetSpaceStatRequest, opts ...grpc.CallOption) (*GetSpaceStatResponse, error)
+	SetSpaceStat(ctx context.Context, in *SetSpaceStatRequest, opts ...grpc.CallOption) (*Error, error)
 	MakeDir(ctx context.Context, in *TreeFileSystemBasicRequest, opts ...grpc.CallOption) (*Error, error)
 	RenameDir(ctx context.Context, in *RenameDirRequest, opts ...grpc.CallOption) (*Error, error)
 	DeleteDir(ctx context.Context, in *TreeFileSystemBasicRequest, opts ...grpc.CallOption) (*Error, error)
@@ -65,6 +72,33 @@ func (c *treeFileSystemServiceClient) NewSpace(ctx context.Context, in *NewSpace
 func (c *treeFileSystemServiceClient) DeleteSpace(ctx context.Context, in *SpaceRequest, opts ...grpc.CallOption) (*Error, error) {
 	out := new(Error)
 	err := c.cc.Invoke(ctx, TreeFileSystemService_DeleteSpace_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *treeFileSystemServiceClient) AllSpaces(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*SpaceInfos, error) {
+	out := new(SpaceInfos)
+	err := c.cc.Invoke(ctx, TreeFileSystemService_AllSpaces_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *treeFileSystemServiceClient) GetSpaceStat(ctx context.Context, in *GetSpaceStatRequest, opts ...grpc.CallOption) (*GetSpaceStatResponse, error) {
+	out := new(GetSpaceStatResponse)
+	err := c.cc.Invoke(ctx, TreeFileSystemService_GetSpaceStat_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *treeFileSystemServiceClient) SetSpaceStat(ctx context.Context, in *SetSpaceStatRequest, opts ...grpc.CallOption) (*Error, error) {
+	out := new(Error)
+	err := c.cc.Invoke(ctx, TreeFileSystemService_SetSpaceStat_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -140,6 +174,9 @@ func (c *treeFileSystemServiceClient) DeleteMetadata(ctx context.Context, in *Tr
 type TreeFileSystemServiceServer interface {
 	NewSpace(context.Context, *NewSpaceRequest) (*Error, error)
 	DeleteSpace(context.Context, *SpaceRequest) (*Error, error)
+	AllSpaces(context.Context, *emptypb.Empty) (*SpaceInfos, error)
+	GetSpaceStat(context.Context, *GetSpaceStatRequest) (*GetSpaceStatResponse, error)
+	SetSpaceStat(context.Context, *SetSpaceStatRequest) (*Error, error)
 	MakeDir(context.Context, *TreeFileSystemBasicRequest) (*Error, error)
 	RenameDir(context.Context, *RenameDirRequest) (*Error, error)
 	DeleteDir(context.Context, *TreeFileSystemBasicRequest) (*Error, error)
@@ -159,6 +196,15 @@ func (UnimplementedTreeFileSystemServiceServer) NewSpace(context.Context, *NewSp
 }
 func (UnimplementedTreeFileSystemServiceServer) DeleteSpace(context.Context, *SpaceRequest) (*Error, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSpace not implemented")
+}
+func (UnimplementedTreeFileSystemServiceServer) AllSpaces(context.Context, *emptypb.Empty) (*SpaceInfos, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AllSpaces not implemented")
+}
+func (UnimplementedTreeFileSystemServiceServer) GetSpaceStat(context.Context, *GetSpaceStatRequest) (*GetSpaceStatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSpaceStat not implemented")
+}
+func (UnimplementedTreeFileSystemServiceServer) SetSpaceStat(context.Context, *SetSpaceStatRequest) (*Error, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetSpaceStat not implemented")
 }
 func (UnimplementedTreeFileSystemServiceServer) MakeDir(context.Context, *TreeFileSystemBasicRequest) (*Error, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MakeDir not implemented")
@@ -226,6 +272,60 @@ func _TreeFileSystemService_DeleteSpace_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TreeFileSystemServiceServer).DeleteSpace(ctx, req.(*SpaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TreeFileSystemService_AllSpaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TreeFileSystemServiceServer).AllSpaces(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TreeFileSystemService_AllSpaces_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TreeFileSystemServiceServer).AllSpaces(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TreeFileSystemService_GetSpaceStat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSpaceStatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TreeFileSystemServiceServer).GetSpaceStat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TreeFileSystemService_GetSpaceStat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TreeFileSystemServiceServer).GetSpaceStat(ctx, req.(*GetSpaceStatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TreeFileSystemService_SetSpaceStat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetSpaceStatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TreeFileSystemServiceServer).SetSpaceStat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TreeFileSystemService_SetSpaceStat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TreeFileSystemServiceServer).SetSpaceStat(ctx, req.(*SetSpaceStatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -370,6 +470,18 @@ var TreeFileSystemService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteSpace",
 			Handler:    _TreeFileSystemService_DeleteSpace_Handler,
+		},
+		{
+			MethodName: "AllSpaces",
+			Handler:    _TreeFileSystemService_AllSpaces_Handler,
+		},
+		{
+			MethodName: "GetSpaceStat",
+			Handler:    _TreeFileSystemService_GetSpaceStat_Handler,
+		},
+		{
+			MethodName: "SetSpaceStat",
+			Handler:    _TreeFileSystemService_SetSpaceStat_Handler,
 		},
 		{
 			MethodName: "MakeDir",

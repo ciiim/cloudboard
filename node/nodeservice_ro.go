@@ -1,5 +1,7 @@
 package node
 
+import "github.com/ciiim/cloudborad/node/chash"
+
 // ReadOnly service
 type NodeServiceRO struct {
 	self *Node
@@ -30,6 +32,13 @@ func (ns *NodeServiceRO) Pick(key []byte) *Node {
 
 func (ns *NodeServiceRO) GetByNodeID(nodeID string) *Node {
 	return ns.cMap.GetByNodeID(nodeID)
+}
+
+func (ns *NodeServiceRO) GetAllReal() []*Node {
+	decideFn := func(node chash.CHashItem) bool {
+		return !node.(*chash.InnerItem).IsVirtual()
+	}
+	return ns.cMap.GetAll(decideFn)
 }
 
 /*

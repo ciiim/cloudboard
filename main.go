@@ -4,12 +4,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/ciiim/cloudborad/cmd/ring"
-	_ "github.com/ciiim/cloudborad/cmd/ring"
+	"github.com/ciiim/cloudborad/cmd/backpack"
+	_ "github.com/ciiim/cloudborad/cmd/backpack"
 )
 
 func main() {
-	if err := ring.App.Run(os.Args); err != nil {
+	if err := backpack.App.Run(os.Args); err != nil {
 		log.Fatalln(err)
 	}
 }

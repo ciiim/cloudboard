@@ -37,6 +37,30 @@ func PBChunkInfoToHashChunkInfo(pb *fspb.HashChunkInfo) *hashchunk.HashChunkInfo
 	}
 }
 
+func PbSpaceStatToSpaceStat(pb *fspb.SpaceStat) *tree.SpaceStatElement {
+	if pb == nil {
+		return nil
+	}
+	return tree.NewSpaceStatElement(pb.Key, pb.Value)
+}
+
+func SpacesToPbSpaces(spaces []tree.SpaceInfo) *fspb.SpaceInfos {
+	pbSpaces := new(fspb.SpaceInfos)
+	pbSpaces.SpaceName = make([]string, len(spaces))
+	for i, v := range spaces {
+		pbSpaces.SpaceName[i] = v.SpaceName
+	}
+	return pbSpaces
+}
+
+func PbSpacesToSpaces(pb *fspb.SpaceInfos) []tree.SpaceInfo {
+	spaces := make([]tree.SpaceInfo, len(pb.SpaceName))
+	for i, v := range pb.SpaceName {
+		spaces[i] = tree.SpaceInfo{SpaceName: v}
+	}
+	return spaces
+}
+
 func PbSubsToSubs(pb []*fspb.SubInfo) []*tree.SubInfo {
 	subs := make([]*tree.SubInfo, len(pb))
 	for i, v := range pb {
